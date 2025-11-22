@@ -9,6 +9,9 @@ class PerfilScreen extends StatelessWidget {
     const Color darkBlue = Color(0xFF07142B);
     const Color accent = Color(0xFF568F7C);
 
+    final String userName =
+        ModalRoute.of(context)?.settings.arguments as String? ?? "Usuário";
+
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: const BotaoMenu(),
@@ -79,10 +82,9 @@ class PerfilScreen extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // CAMPOS DO PERFIL
-            _profileField("Nome", "Leticia Santos"),
-            _profileField("Email", "leticia@email.com"),
-            _profileField("Título", "Usuária do SmartPay"),
+            _profileField("Nome", userName),
+            _profileField("Email", "usuario@email.com"),
+            _profileField("Título", "Usuário SmartPay"),
             _profileField("Localização", "Brasil"),
           ],
         ),

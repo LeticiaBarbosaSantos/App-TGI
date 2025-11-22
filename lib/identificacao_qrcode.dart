@@ -12,11 +12,20 @@ class QRCodeScreen extends StatelessWidget {
     return Scaffold(
       bottomNavigationBar: const BotaoMenu(),
 
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: darkBlue),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+
       body: Column(
         children: [
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 110, bottom: 60),
+            padding: const EdgeInsets.only(top: 50, bottom: 60),
             decoration: const BoxDecoration(
               color: darkBlue,
               borderRadius: BorderRadius.only(

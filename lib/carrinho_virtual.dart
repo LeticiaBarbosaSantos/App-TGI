@@ -56,7 +56,7 @@ class CarrinhoVirtualScreen extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Navigator.pushNamed(context, "/identificacao_concluida");
+              Navigator.pushNamed(context, "/pagamento");
             },
             child: const Text(
               "Finalizar Pagamento",
@@ -95,6 +95,7 @@ class CarrinhoVirtualScreen extends StatelessWidget {
     );
   }
 
+
   Widget _historico(String descricao, String valor) {
     return Card(
       child: ListTile(
@@ -106,4 +107,5 @@ class CarrinhoVirtualScreen extends StatelessWidget {
       ),
     );
   }
+  
 }

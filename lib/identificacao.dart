@@ -14,6 +14,13 @@ class IdentificacaoScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       bottomNavigationBar: const BotaoMenu(),
 
+    appBar: AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      automaticallyImplyLeading: true,
+      iconTheme: const IconThemeData(color: darkBlue),
+    ),
+
       body: Column(
         children: [
           Container(

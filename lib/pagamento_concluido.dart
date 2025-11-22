@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'botao_menu.dart';
 
-class IdentificacaoConcluidaScreen extends StatelessWidget {
-  const IdentificacaoConcluidaScreen({super.key});
+class PagamentoConcluidoScreen extends StatelessWidget {
+  const PagamentoConcluidoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class IdentificacaoConcluidaScreen extends StatelessWidget {
             Icon(Icons.check_circle, size: 130, color: accent),
             SizedBox(height: 20),
             Text(
-              "Identificação concluída!",
+              "Pagamento concluído!",
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,

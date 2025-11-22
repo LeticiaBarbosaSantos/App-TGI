@@ -3,8 +3,10 @@ import 'menu.dart';
 import 'carrinho_virtual.dart';  
 import 'identificacao.dart';
 import 'identificacao_qrcode.dart';
-import 'identificacao_concluida.dart';
+import 'pagamento_concluido.dart';
 import 'perfil.dart';
+import 'pagamento.dart';
+
 
 void main() {
   runApp(const SmartPayApp());
@@ -23,8 +25,9 @@ class SmartPayApp extends StatelessWidget {
         "/carrinho": (context) => const CarrinhoVirtualScreen(),
         "/identificacao": (context) => const IdentificacaoScreen(),
         "/qrcode": (context) => const QRCodeScreen(),
-        "/identificacao_concluida": (context) => const IdentificacaoConcluidaScreen(),
+        "/pagamento_concluida": (context) => const PagamentoConcluidoScreen(),
         "/perfil": (context) => const PerfilScreen(),
+        "/pagamento": (context) => const PagamentoSimuladoScreen(),
       },
     );
   }
