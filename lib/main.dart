@@ -27,7 +27,7 @@ class SmartPayApp extends StatelessWidget {
         "/qrcode": (context) => const QRCodeScreen(),
         "/pagamento_concluida": (context) => const PagamentoConcluidoScreen(),
         "/perfil": (context) => const PerfilScreen(),
-        "/pagamento": (context) => const PagamentoSimuladoScreen(),
+        "/pagamento": (context) => const PagamentoScreen(),
       },
     );
   }

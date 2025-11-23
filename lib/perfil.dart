@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
 import 'botao_menu.dart';
 
-class PerfilScreen extends StatelessWidget {
+class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
 
   @override
+  State<PerfilScreen> createState() => _PerfilScreenState();
+}
+
+class _PerfilScreenState extends State<PerfilScreen> {
+  final Color darkBlue = const Color(0xFF07142B);
+  final Color accent = const Color(0xFF568F7C);
+
+  // Controladores para campos editáveis
+  final TextEditingController nomeController =
+      TextEditingController(text: "Letícia Silva");
+
+  final TextEditingController emailController =
+      TextEditingController(text: "leticia@email.com");
+
+  final TextEditingController enderecoController =
+      TextEditingController(text: "Rua Exemplo, 123 - Centro");
+
+  final TextEditingController pagamentoController =
+      TextEditingController(text: "Cartão Visa final 1234");
+
+  @override
   Widget build(BuildContext context) {
-    const Color darkBlue = Color(0xFF07142B);
-    const Color accent = Color(0xFF568F7C);
-
-    final String userName =
-        ModalRoute.of(context)?.settings.arguments as String? ?? "Usuário";
-
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: const BotaoMenu(),
@@ -20,108 +35,116 @@ class PerfilScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: darkBlue),
+          icon: Icon(Icons.arrow_back, color: darkBlue),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Editar Perfil",
-          style: TextStyle(color: darkBlue),
+        title: Text(
+          "Perfil",
+          style: TextStyle(
+            color: darkBlue,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () {},
+        centerTitle: true,
+      ),
+
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        children: [
+          const SizedBox(height: 10),
+
+          // Foto + Nome
+          Column(
+            children: [
+              CircleAvatar(
+                radius: 42,
+                backgroundColor: accent.withOpacity(0.3),
+                child: const Icon(Icons.person, size: 45, color: Colors.white),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                "Editar Perfil",
+                style: TextStyle(
+                  color: darkBlue,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 25),
+
+          // Campos editáveis
+          _input("Nome completo", nomeController),
+          _input("E-mail", emailController),
+          _input("Endereço", enderecoController),
+          _input("Forma de pagamento", pagamentoController),
+
+          const SizedBox(height: 30),
+
+          // Botão salvar
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: accent,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  backgroundColor: accent,
+                  content: const Text("Informações salvas!"),
+                ),
+              );
+            },
             child: const Text(
-              "Salvar",
+              "Salvar alterações",
               style: TextStyle(
-                color: accent,
+                fontSize: 17,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
-          )
+          ),
+
+          const SizedBox(height: 30),
         ],
-      ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-
-            // FOTO DE PERFIL
-            Center(
-              child: Stack(
-                children: [
-                  const CircleAvatar(
-                    radius: 55,
-                    backgroundImage: AssetImage("assets/user.jpg"),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: accent,
-                      ),
-                      padding: const EdgeInsets.all(6),
-                      child: const Icon(Icons.edit, color: Colors.white, size: 20),
-                    ),
-                  )
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 10),
-            const Text(
-              "FOTO DO PERFIL",
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey,
-                letterSpacing: 1,
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            _profileField("Nome", userName),
-            _profileField("Email", "usuario@email.com"),
-            _profileField("Título", "Usuário SmartPay"),
-            _profileField("Localização", "Brasil"),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _profileField(String title, String value) {
-    const Color darkBlue = Color(0xFF07142B);
-
+  // Widget de input estilizado
+  Widget _input(String label, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          title.toUpperCase(),
+          label.toUpperCase(),
           style: const TextStyle(
             fontSize: 12,
             color: Colors.grey,
             fontWeight: FontWeight.bold,
+            letterSpacing: 1,
           ),
         ),
-        const SizedBox(height: 5),
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 5),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(fontSize: 16, color: darkBlue),
-              ),
-              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-            ],
+        const SizedBox(height: 6),
+
+        TextField(
+          controller: controller,
+          cursorColor: accent,
+          decoration: InputDecoration(
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: accent, width: 2),
+            ),
           ),
+          style: const TextStyle(fontSize: 16),
         ),
-        const Divider(),
-        const SizedBox(height: 12),
+
+        const SizedBox(height: 22),
       ],
     );
   }

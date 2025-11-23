@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class PagamentoSimuladoScreen extends StatelessWidget {
-  const PagamentoSimuladoScreen({super.key});
+class PagamentoScreen extends StatelessWidget {
+  const PagamentoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -9,125 +9,128 @@ class PagamentoSimuladoScreen extends StatelessWidget {
     const Color accent = Color(0xFF568F7C);
 
     return Scaffold(
+      backgroundColor: Colors.white,
+
       appBar: AppBar(
-        backgroundColor: darkBlue,
-        title: const Text(
-          "Pagamento",
-          style: TextStyle(color: Colors.white),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: darkBlue),
+          onPressed: () => Navigator.pop(context),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text(
+          "Método de Pagamento",
+          style: TextStyle(
+            color: darkBlue,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
       ),
 
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Selecione a forma de pagamento:",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        children: [
+
+          const SizedBox(height: 10),
+
+          const Text(
+            "Selecione uma forma de pagamento:",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: darkBlue,
             ),
+          ),
 
-            const SizedBox(height: 20),
+          const SizedBox(height: 20),
 
-            // --- PIX ---
-            _opcaoPagamento(
-              icon: Icons.qr_code_2,
-              titulo: "PIX",
-              descricao: "Pagamento instantâneo",
+          _opcaoPagamento(
+            context,
+            icon: Icons.credit_card,
+            titulo: "Cartão de Crédito",
+            subtitulo: "Visa, MasterCard, Elo...",
+            accent: accent,
+          ),
+
+          _opcaoPagamento(
+            context,
+            icon: Icons.account_balance,
+            titulo: "Débito Bancário",
+            subtitulo: "Itaú, Bradesco, Caixa...",
+            accent: accent,
+          ),
+
+          _opcaoPagamento(
+            context,
+            icon: Icons.pix,
+            titulo: "PIX",
+            subtitulo: "Pagamento instantâneo",
+            accent: accent,
+          ),
+
+          const SizedBox(height: 40),
+
+          // BOTÃO DE CANCELAR
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              "Cancelar",
+              style: TextStyle(
+                color: darkBlue,
+                fontSize: 16,
+                decoration: TextDecoration.underline,
+              ),
             ),
-
-            const SizedBox(height: 10),
-
-            // --- Cartão ---
-            _opcaoPagamento(
-              icon: Icons.credit_card,
-              titulo: "Cartão de Crédito",
-              descricao: "Visa, Mastercard",
-            ),
-
-            const SizedBox(height: 10),
-
-            // --- Dinheiro ---
-            _opcaoPagamento(
-              icon: Icons.attach_money,
-              titulo: "Dinheiro",
-              descricao: "Pagar direto no caixa",
-            ),
-
-            const Spacer(),
-
-            // BOTÕES
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: darkBlue, width: 2),
-                    ),
-                    child: const Text(
-                      "Cancelar",
-                      style: TextStyle(fontSize: 18, color: darkBlue),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(width: 15),
-
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/identificacao_concluida");
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accent,
-                    ),
-                    child: const Text(
-                      "Confirmar",
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _opcaoPagamento({
+  // -------------------------
+  // WIDGET DA OPÇÃO DE PAGAMENTO
+  // -------------------------
+  Widget _opcaoPagamento(
+    BuildContext context, {
     required IconData icon,
     required String titulo,
-    required String descricao,
+    required String subtitulo,
+    required Color accent,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black12),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 35, color: Color(0xFF07142B)),
-          const SizedBox(width: 15),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                titulo,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      child: ListTile(
+        leading: Icon(icon, size: 32, color: accent),
+        title: Text(
+          titulo,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(subtitulo),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 18),
+        onTap: () {
+          // Apenas SIMULA o pagamento
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              Text(
-                descricao,
-                style: const TextStyle(fontSize: 14, color: Colors.black54),
-              )
-            ],
-          ),
-        ],
+              title: Text("Pagamento iniciado"),
+              content: Text(
+                  "Simulação de pagamento usando:\n\n$titulo\n\nIsso é apenas uma demonstração."),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Fechar"),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
