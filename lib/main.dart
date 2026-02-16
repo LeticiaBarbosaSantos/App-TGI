@@ -6,7 +6,8 @@ import 'identificacao_qrcode.dart';
 import 'pagamento_concluido.dart';
 import 'perfil.dart';
 import 'pagamento.dart';
-
+import 'login.dart';
+import 'cadastro.dart';
 
 void main() {
   runApp(const SmartPayApp());
@@ -19,8 +20,10 @@ class SmartPayApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: "/home", 
+      initialRoute: "/login", 
       routes: {
+        "/login": (context) => const LoginScreen(),
+        "/cadastro": (context) => const CadastroScreen(),
         "/home": (context) => const HomeScreen(),
         "/carrinho": (context) => const CarrinhoVirtualScreen(),
         "/identificacao": (context) => const IdentificacaoScreen(),
