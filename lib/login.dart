@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,21 +12,58 @@ class _LoginScreenState extends State<LoginScreen> {
   // Controladores dos campos
   final TextEditingController emailController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
+  bool _loading = false;
+  bool _senhaVisivel = false;
 
-  // Função de login simples
-  void fazerLogin() {
+  // Função de login com validação na API
+  void fazerLogin() async {
     String email = emailController.text.trim();
     String senha = senhaController.text.trim();
 
-    if (email.isNotEmpty && senha.isNotEmpty) {
-      Navigator.pushReplacementNamed(context, "/home");
-    } else {
+    if (email.isEmpty || senha.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Preencha e-mail e senha corretamente!"),
           backgroundColor: Color.fromARGB(222, 59, 59, 59),
         ),
       );
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      final response = await ApiService.loginUsuario(
+        email: email,
+        senha: senha,
+      );
+
+      if (!mounted) return;
+
+      // Login bem-sucedido - salvar dados e ir para home
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Login realizado com sucesso!"),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      // Navegar para home com ID do usuário
+      Navigator.pushReplacementNamed(
+        context,
+        "/home",
+        arguments: response['usuario_id'],
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Erro: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _loading = false);
     }
   }
 
@@ -115,6 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // 🔹 Campo e-mail
                   TextField(
                     controller: emailController,
+                    enabled: !_loading,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       labelText: "E-mail",
@@ -128,10 +167,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 20),
 
-                  // 🔹 Campo senha
+                  // 🔹 Campo senha com toggle de visibilidade
                   TextField(
                     controller: senhaController,
-                    obscureText: true,
+                    enabled: !_loading,
+                    obscureText: !_senhaVisivel,
                     decoration: InputDecoration(
                       labelText: "Senha",
                       filled: true,
@@ -139,16 +179,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _senhaVisivel ? Icons.visibility : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() => _senhaVisivel = !_senhaVisivel);
+                        },
+                      ),
                     ),
                   ),
 
                   const SizedBox(height: 35),
 
-                  // 🔹 Botão Entrar
+                  // 🔹 Botão Entrar com estado de carregamento
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: fazerLogin,
+                      onPressed: _loading ? null : fazerLogin,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         backgroundColor: const Color(0xFF568F7C),
@@ -156,10 +204,19 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
-                        "Entrar",
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+                      child: _loading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text(
+                              "Entrar",
+                              style: TextStyle(fontSize: 18, color: Colors.white),
+                            ),
                     ),
                   ),
 
@@ -167,9 +224,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // 🔹 Cadastro
                   TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/cadastro");
-                    },
+                    onPressed: _loading
+                        ? null
+                        : () {
+                            Navigator.pushNamed(context, "/cadastro");
+                          },
                     child: const Text(
                       "Não tem conta? Cadastre-se",
                       style: TextStyle(
