@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'botao_menu.dart';
+import 'services/api_service.dart';
 
 class HomeScreen extends StatelessWidget {
   final String userName;
 
   const HomeScreen({super.key, this.userName = "Usuário"});
+
+  String _resolvedUserName(BuildContext context) {
+    final arg = ModalRoute.of(context)?.settings.arguments;
+    if (arg is String && arg.isNotEmpty) return arg;
+    return ApiService.currentUserName ?? userName;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +40,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    userName,
+                    _resolvedUserName(context),
                     style: const TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -45,11 +52,18 @@ class HomeScreen extends StatelessWidget {
 
               GestureDetector(
                 onTap: () {
-                  Navigator.pushNamed(
-                    context,
-                    "/perfil",
-                    arguments: userName,
-                  );
+                  final userId = ApiService.currentUserId;
+                  if (userId != null) {
+                    Navigator.pushNamed(
+                      context,
+                      "/perfil",
+                      arguments: userId,
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Usuário não autenticado')),
+                    );
+                  }
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(top: 10),

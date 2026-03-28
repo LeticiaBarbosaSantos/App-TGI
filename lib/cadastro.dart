@@ -1,5 +1,52 @@
  import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'services/api_service.dart';
+
+class CpfInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.length > 11) digits = digits.substring(0, 11);
+
+    String text = '';
+    for (int i = 0; i < digits.length; i++) {
+      if (i == 3 || i == 6) text += '.';
+      if (i == 9) text += '-';
+      text += digits[i];
+    }
+
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+}
+
+class TelefoneInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.length > 11) digits = digits.substring(0, 11);
+
+    String text = '';
+    if (digits.isEmpty) {
+      text = '';
+    } else if (digits.length <= 2) {
+      text = '(${digits}';
+    } else if (digits.length <= 6) {
+      text = '(${digits.substring(0, 2)}) ${digits.substring(2)}';
+    } else if (digits.length <= 10) {
+      text = '(${digits.substring(0, 2)}) ${digits.substring(2, 6)}-${digits.substring(6)}';
+    } else {
+      text = '(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}';
+    }
+
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+}
 
 class CadastroScreen extends StatefulWidget {
   const CadastroScreen({super.key});
@@ -35,12 +82,24 @@ class _CadastroScreenState extends State<CadastroScreen> {
     return null;
   }
 
+  String _somenteDigitos(String text) => text.replaceAll(RegExp(r'\D'), '');
+
   String? _validarCPF(String? value) {
-    if (value == null || value.isEmpty) {
+    final cpf = _somenteDigitos(value ?? '');
+    if (cpf.isEmpty) {
       return "CPF é obrigatório";
     }
-    if (value.length != 11) {
+    if (cpf.length != 11) {
       return "CPF deve ter 11 dígitos";
+    }
+    return null;
+  }
+
+  String? _validarTelefone(String? value) {
+    if (value == null || value.trim().isEmpty) return null;
+    final telefone = _somenteDigitos(value);
+    if (telefone.length < 10 || telefone.length > 11) {
+      return "Telefone deve ter 10 ou 11 dígitos";
     }
     return null;
   }
@@ -69,13 +128,18 @@ class _CadastroScreenState extends State<CadastroScreen> {
 
     setState(() => _loading = true);
 
+    final cpf = _somenteDigitos(_cpfController.text);
+    final telefone = _telefoneController.text.trim().isEmpty 
+      ? null 
+      : _somenteDigitos(_telefoneController.text);
+
     try {
       await ApiService.registrarUsuario(
         nome: _nomeController.text,
         email: _emailController.text,
-        cpf: _cpfController.text,
+        cpf: cpf,
         senha: _senhaController.text,
-        telefone: _telefoneController.text,
+        telefone: telefone,
       );
 
       if (!mounted) return;
@@ -170,9 +234,10 @@ class _CadastroScreenState extends State<CadastroScreen> {
 
                 _campoTexto(
                   controller: _cpfController,
-                  label: "CPF (11 dígitos)",
+                  label: "CPF",
                   icon: Icons.credit_card,
                   tipo: TextInputType.number,
+                  inputFormatters: [CpfInputFormatter()],
                   validator: _validarCPF,
                 ),
                 const SizedBox(height: 16),
@@ -182,6 +247,8 @@ class _CadastroScreenState extends State<CadastroScreen> {
                   label: "Telefone",
                   icon: Icons.phone,
                   tipo: TextInputType.phone,
+                  inputFormatters: [TelefoneInputFormatter()],
+                  validator: _validarTelefone,
                 ),
                 const SizedBox(height: 16),
 
@@ -293,6 +360,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
     required IconData icon,
     bool obscuro = false,
     TextInputType tipo = TextInputType.text,
+    List<TextInputFormatter>? inputFormatters,
     Widget? suffix,
     String? Function(String?)? validator,
   }) {
@@ -300,6 +368,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
       controller: controller,
       obscureText: obscuro,
       keyboardType: tipo,
+      inputFormatters: inputFormatters,
       validator: validator,
       decoration: InputDecoration(
         labelText: label,

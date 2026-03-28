@@ -2,8 +2,17 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  static const String baseUrl = "http://localhost:8000";
-  
+  // Ajuste o host conforme seu ambiente:
+  // - Android Emulator: 10.0.2.2
+  // - iOS Simulator / desktop: 127.0.0.1
+  // - Dispositivo real (mesma rede do PC): 192.168.x.x
+  static const String baseUrl = "http://10.0.2.2:8000"; // padrão para Android emulador
+
+  // Estado do usuário logado em memória (simplificado)
+  static int? currentUserId;
+  static String? currentUserName;
+  static String? currentUserEmail;
+
   // ==================== AUTENTICAÇÃO ====================
   
   static Future<Map<String, dynamic>> loginUsuario({
@@ -21,7 +30,11 @@ class ApiService {
       );
       
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
+        final data = jsonDecode(response.body);
+        currentUserId = data['usuario_id'];
+        currentUserName = data['nome'];
+        currentUserEmail = data['email'];
+        return data;
       } else {
         final erro = jsonDecode(response.body);
         throw Exception(erro['detail'] ?? 'Erro ao fazer login');

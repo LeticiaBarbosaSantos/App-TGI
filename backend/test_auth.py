@@ -6,6 +6,7 @@ Testa tanto a API quanto a persistência no banco de dados
 
 import requests
 import json
+import random
 from datetime import datetime
 import sys
 
@@ -29,10 +30,11 @@ def test_cadastro_valido():
     """Testa cadastro com dados válidos"""
     print_header("TESTE 1: CADASTRO VÁLIDO")
     
+    cpf = ''.join(str(random.randint(0, 9)) for _ in range(11))
     usuario = {
         "nome": f"Usuário Teste {datetime.now().strftime('%H%M%S')}",
         "email": f"teste{datetime.now().timestamp()}@example.com",
-        "cpf": "12345678901",
+        "cpf": cpf,
         "senha": "senha123456",
         "telefone": "11999999999"
     }
@@ -108,7 +110,7 @@ def test_cadastro_cpf_duplicado():
     """Testa rejeição de CPF duplicado"""
     print_header("TESTE 3: CPF DUPLICADO")
     
-    cpf = "33333333333"
+    cpf = ''.join(str(random.randint(0, 9)) for _ in range(11))
     email1 = f"cpf_dup1_{datetime.now().timestamp()}@example.com"
     email2 = f"cpf_dup2_{datetime.now().timestamp()}@example.com"
     

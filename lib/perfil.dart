@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'botao_menu.dart';
+import 'services/api_service.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -12,25 +13,66 @@ class _PerfilScreenState extends State<PerfilScreen> {
   final Color darkBlue = const Color(0xFF07142B);
   final Color accent = const Color(0xFF568F7C);
 
-  // Controladores para campos editáveis
-  final TextEditingController nomeController =
-      TextEditingController(text: "Letícia Silva");
+  final TextEditingController nomeController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController enderecoController = TextEditingController();
+  final TextEditingController pagamentoController = TextEditingController();
 
-  final TextEditingController emailController =
-      TextEditingController(text: "leticia@email.com");
+  bool _carregando = true;
 
-  final TextEditingController enderecoController =
-      TextEditingController(text: "Rua Exemplo, 123 - Centro");
+  @override
+  void initState() {
+    super.initState();
+    _carregarPerfil();
+  }
 
-  final TextEditingController pagamentoController =
-      TextEditingController(text: "Cartão Visa final 1234");
+  Future<void> _carregarPerfil() async {
+    try {
+      int? userId = ApiService.currentUserId;
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (userId == null && args is int) {
+        userId = args;
+      }
+
+      if (userId == null) {
+        throw Exception('Usuário não autenticado');
+      }
+
+      final perfil = await ApiService.obterPerfil(userId);
+      nomeController.text = perfil['nome'] ?? ApiService.currentUserName ?? '';
+      emailController.text = perfil['email'] ?? ApiService.currentUserEmail ?? '';
+      enderecoController.text = perfil['endereco'] ?? '';
+
+      if (perfil['metodosPagamento'] is List && (perfil['metodosPagamento'] as List).isNotEmpty) {
+        final metodo = perfil['metodosPagamento'][0];
+        pagamentoController.text = '${metodo['tipo'] ?? ''} ${metodo['ultimos_digitos'] ?? ''}';
+      } else {
+        pagamentoController.text = 'Nenhum método cadastrado';
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao carregar perfil: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _carregando = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_carregando) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       bottomNavigationBar: const BotaoMenu(),
-
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -39,7 +81,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "Perfil",
+          'Perfil',
           style: TextStyle(
             color: darkBlue,
             fontSize: 22,
@@ -48,13 +90,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
         ),
         centerTitle: true,
       ),
-
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         children: [
           const SizedBox(height: 10),
-
-          // Foto + Nome
           Column(
             children: [
               CircleAvatar(
@@ -64,7 +103,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                "Editar Perfil",
+                'Editar Perfil',
                 style: TextStyle(
                   color: darkBlue,
                   fontSize: 20,
@@ -73,51 +112,37 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
             ],
           ),
-
           const SizedBox(height: 25),
-
-          // Campos editáveis
-          _input("Nome completo", nomeController),
-          _input("E-mail", emailController),
-          _input("Endereço", enderecoController),
-          _input("Forma de pagamento", pagamentoController),
-
+          _input('Nome completo', nomeController),
+          _input('E-mail', emailController),
+          _input('Endereço', enderecoController),
+          _input('Forma de pagamento', pagamentoController),
           const SizedBox(height: 30),
-
-          // Botão salvar
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: accent,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
             onPressed: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   backgroundColor: accent,
-                  content: const Text("Informações salvas!"),
+                  content: const Text('Informações salvas!'),
                 ),
               );
             },
             child: const Text(
-              "Salvar alterações",
-              style: TextStyle(
-                fontSize: 17,
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+              'Salvar alterações',
+              style: TextStyle(fontSize: 17, color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
-
           const SizedBox(height: 30),
         ],
       ),
     );
   }
 
-  // Widget de input estilizado
   Widget _input(String label, TextEditingController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,7 +157,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
           ),
         ),
         const SizedBox(height: 6),
-
         TextField(
           controller: controller,
           cursorColor: accent,
@@ -143,7 +167,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
           ),
           style: const TextStyle(fontSize: 16),
         ),
-
         const SizedBox(height: 22),
       ],
     );

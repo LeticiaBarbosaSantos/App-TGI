@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -110,6 +111,23 @@ def registrar_usuario(usuario: UsuarioRegistro, db: Session = Depends(get_db)):
     - **senha**: Mínimo 6 caracteres
     """
     
+    # Normalizar CPF e telefone
+    cpf_limpo = re.sub(r'\D', '', usuario.cpf)
+    if len(cpf_limpo) != 11:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="CPF inválido - deve ter 11 dígitos"
+        )
+
+    telefone_limpo = None
+    if usuario.telefone:
+        telefone_limpo = re.sub(r'\D', '', usuario.telefone)
+        if len(telefone_limpo) not in (10, 11):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Telefone inválido - deve ter 10 ou 11 dígitos"
+            )
+
     # Verificar se email já existe
     email_existente = db.query(Usuario).filter(Usuario.email == usuario.email).first()
     if email_existente:
@@ -119,7 +137,7 @@ def registrar_usuario(usuario: UsuarioRegistro, db: Session = Depends(get_db)):
         )
     
     # Verificar se CPF já existe
-    cpf_existente = db.query(Usuario).filter(Usuario.cpf == usuario.cpf).first()
+    cpf_existente = db.query(Usuario).filter(Usuario.cpf == cpf_limpo).first()
     if cpf_existente:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -137,9 +155,9 @@ def registrar_usuario(usuario: UsuarioRegistro, db: Session = Depends(get_db)):
     novo_usuario = Usuario(
         nome=usuario.nome,
         email=usuario.email,
-        cpf=usuario.cpf,
+        cpf=cpf_limpo,
         senha_hash=hash_senha(usuario.senha),
-        telefone=usuario.telefone,
+        telefone=telefone_limpo,
         data_nascimento=usuario.data_nascimento
     )
     
