@@ -10,11 +10,11 @@ load_dotenv()
 USE_SQLITE = True
 
 if USE_SQLITE:
-    DATABASE_URL = "sqlite:///./smartpay.db"
+    DATABASE_URL = "sqlite:///./starfast.db"
 else:
     DATABASE_URL = os.getenv(
         "DATABASE_URL",
-        "postgresql://usuario:senha@localhost:5432/smartpay"
+        "postgresql://usuario:senha@localhost:5432/starfast"
     )
 
 engine = create_engine(

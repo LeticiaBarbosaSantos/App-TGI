@@ -10,11 +10,11 @@ import 'login.dart';
 import 'cadastro.dart';
 
 void main() {
-  runApp(const SmartPayApp());
+  runApp(const StarFastApp());
 }
 
-class SmartPayApp extends StatelessWidget {
-  const SmartPayApp({super.key});
+class StarFastApp extends StatelessWidget {
+  const StarFastApp({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -15,7 +15,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController cpfController = TextEditingController();
+  final TextEditingController telefoneController = TextEditingController();
   final TextEditingController enderecoController = TextEditingController();
+  final TextEditingController nascimentoController = TextEditingController();
   final TextEditingController pagamentoController = TextEditingController();
 
   bool _carregando = true;
@@ -38,22 +41,31 @@ class _PerfilScreenState extends State<PerfilScreen> {
         throw Exception('Usuário não autenticado');
       }
 
+      ApiService.currentUserId = userId;
       final perfil = await ApiService.obterPerfil(userId);
       nomeController.text = perfil['nome'] ?? ApiService.currentUserName ?? '';
-      emailController.text = perfil['email'] ?? ApiService.currentUserEmail ?? '';
-      enderecoController.text = perfil['endereco'] ?? '';
+      emailController.text =
+          perfil['email'] ?? ApiService.currentUserEmail ?? '';
+      cpfController.text = perfil['cpf'] ?? ApiService.currentUserCpf ?? '';
+      telefoneController.text =
+          perfil['telefone'] ?? ApiService.currentUserTelefone ?? '';
+      enderecoController.text =
+          perfil['endereco'] ?? ApiService.currentUserEndereco ?? '';
+      nascimentoController.text =
+          perfil['data_nascimento'] ?? ApiService.currentUserNascimento ?? '';
+      pagamentoController.text =
+          perfil['metodo_pagamento'] ??
+          ApiService.currentUserMetodoPagamento ??
+          '';
 
-      if (perfil['metodosPagamento'] is List && (perfil['metodosPagamento'] as List).isNotEmpty) {
-        final metodo = perfil['metodosPagamento'][0];
-        pagamentoController.text = '${metodo['tipo'] ?? ''} ${metodo['ultimos_digitos'] ?? ''}';
-      } else {
+      if (pagamentoController.text.isEmpty) {
         pagamentoController.text = 'Nenhum método cadastrado';
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao carregar perfil: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro ao carregar perfil: $e')));
       }
     } finally {
       if (mounted) {
@@ -62,12 +74,42 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
+  Future<void> _salvarPerfil() async {
+    final usuarioId = ApiService.currentUserId;
+    if (usuarioId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Usuário não autenticado')));
+      return;
+    }
+
+    final dados = {
+      'nome': nomeController.text.trim(),
+      'email': emailController.text.trim(),
+      'cpf': cpfController.text.trim(),
+      'telefone': telefoneController.text.trim(),
+      'endereco': enderecoController.text.trim(),
+      'data_nascimento': nascimentoController.text.trim(),
+      'metodo_pagamento': pagamentoController.text.trim(),
+    };
+
+    try {
+      await ApiService.atualizarPerfil(usuarioId: usuarioId, dados: dados);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Perfil atualizado com sucesso!')),
+      );
+      await _carregarPerfil();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erro ao atualizar perfil: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_carregando) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -115,26 +157,28 @@ class _PerfilScreenState extends State<PerfilScreen> {
           const SizedBox(height: 25),
           _input('Nome completo', nomeController),
           _input('E-mail', emailController),
+          _input('CPF', cpfController),
+          _input('Telefone', telefoneController),
           _input('Endereço', enderecoController),
+          _input('Data de nascimento', nascimentoController),
           _input('Forma de pagamento', pagamentoController),
           const SizedBox(height: 30),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: accent,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
             ),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  backgroundColor: accent,
-                  content: const Text('Informações salvas!'),
-                ),
-              );
-            },
+            onPressed: _salvarPerfil,
             child: const Text(
               'Salvar alterações',
-              style: TextStyle(fontSize: 17, color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 17,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(height: 30),

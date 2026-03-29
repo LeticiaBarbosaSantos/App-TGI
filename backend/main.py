@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import Optional
 from routes_auth import router as auth_router
 
-app = FastAPI(title="SmartPay API")
+app = FastAPI(title="StarFast API")
 
 # Incluir rotas de autenticação
 app.include_router(auth_router)

@@ -14,7 +14,7 @@ import json
 client = TestClient(app)
 
 print("=" * 60)
-print("TESTE DE AUTENTICACAO - SmartPay API")
+print("TESTE DE AUTENTICACAO - StarFast API")
 print("=" * 60)
 
 # ==================== TESTE 1: CADASTRO ====================

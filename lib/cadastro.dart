@@ -1,10 +1,13 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'services/api_service.dart';
 
 class CpfInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length > 11) digits = digits.substring(0, 11);
 
@@ -24,7 +27,10 @@ class CpfInputFormatter extends TextInputFormatter {
 
 class TelefoneInputFormatter extends TextInputFormatter {
   @override
-  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
     String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
     if (digits.length > 11) digits = digits.substring(0, 11);
 
@@ -36,9 +42,39 @@ class TelefoneInputFormatter extends TextInputFormatter {
     } else if (digits.length <= 6) {
       text = '(${digits.substring(0, 2)}) ${digits.substring(2)}';
     } else if (digits.length <= 10) {
-      text = '(${digits.substring(0, 2)}) ${digits.substring(2, 6)}-${digits.substring(6)}';
+      text =
+          '(${digits.substring(0, 2)}) ${digits.substring(2, 6)}-${digits.substring(6)}';
     } else {
-      text = '(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}';
+      text =
+          '(${digits.substring(0, 2)}) ${digits.substring(2, 7)}-${digits.substring(7)}';
+    }
+
+    return TextEditingValue(
+      text: text,
+      selection: TextSelection.collapsed(offset: text.length),
+    );
+  }
+}
+
+class DataNascimentoInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    String digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.length > 8) digits = digits.substring(0, 8);
+
+    String text = '';
+    if (digits.isEmpty) {
+      text = '';
+    } else if (digits.length <= 2) {
+      text = digits;
+    } else if (digits.length <= 4) {
+      text = '${digits.substring(0, 2)}/${digits.substring(2)}';
+    } else {
+      text =
+          '${digits.substring(0, 2)}/${digits.substring(2, 4)}/${digits.substring(4)}';
     }
 
     return TextEditingValue(
@@ -63,6 +99,10 @@ class _CadastroScreenState extends State<CadastroScreen> {
   final TextEditingController _telefoneController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
   final TextEditingController _confirmarSenhaController =
+      TextEditingController();
+  final TextEditingController _enderecoController = TextEditingController();
+  final TextEditingController _nascimentoController = TextEditingController();
+  final TextEditingController _metodoPagamentoController =
       TextEditingController();
 
   bool _loading = false;
@@ -129,35 +169,57 @@ class _CadastroScreenState extends State<CadastroScreen> {
     setState(() => _loading = true);
 
     final cpf = _somenteDigitos(_cpfController.text);
-    final telefone = _telefoneController.text.trim().isEmpty 
-      ? null 
-      : _somenteDigitos(_telefoneController.text);
+    final telefone = _telefoneController.text.trim().isEmpty
+        ? null
+        : _somenteDigitos(_telefoneController.text);
 
     try {
-      await ApiService.registrarUsuario(
+      final resposta = await ApiService.registrarUsuario(
         nome: _nomeController.text,
         email: _emailController.text,
         cpf: cpf,
         senha: _senhaController.text,
         telefone: telefone,
+        // Campos extras para perfil
+        endereco: _enderecoController.text.trim().isEmpty
+            ? null
+            : _enderecoController.text.trim(),
+        nascimento: _nascimentoController.text.trim().isEmpty
+            ? null
+            : _nascimentoController.text.trim(),
+        metodo_pagamento: _metodoPagamentoController.text.trim().isEmpty
+            ? null
+            : _metodoPagamentoController.text.trim(),
       );
+
+      ApiService.currentUserId = resposta['usuario_id'] ?? resposta['id'];
+      ApiService.currentUserName = _nomeController.text;
+      ApiService.currentUserEmail = _emailController.text;
+      ApiService.currentUserCpf = cpf;
+      ApiService.currentUserTelefone = telefone;
+      ApiService.currentUserEndereco = _enderecoController.text.trim();
+      ApiService.currentUserNascimento = _nascimentoController.text.trim();
+      ApiService.currentUserMetodoPagamento = _metodoPagamentoController.text
+          .trim();
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Cadastro realizado com sucesso! Faça login."),
+          content: Text(
+            "Cadastro realizado com sucesso! Bem-vindo à StarFast.",
+          ),
           backgroundColor: Colors.green,
         ),
       );
 
-      // Voltar para login
-      Navigator.pop(context);
+      // Ir para perfil após cadastro
+      Navigator.pushReplacementNamed(context, '/perfil');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erro: $e")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Erro: $e")));
     } finally {
       setState(() => _loading = false);
     }
@@ -188,7 +250,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
           Text(
-            "Crie sua conta SmartPay",
+            "Crie sua conta StarFast",
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -198,10 +260,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
           const SizedBox(height: 10),
           Text(
             "Preencha os dados abaixo para se cadastrar",
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
           const SizedBox(height: 30),
 
@@ -253,6 +312,50 @@ class _CadastroScreenState extends State<CadastroScreen> {
                 const SizedBox(height: 16),
 
                 _campoTexto(
+                  controller: _enderecoController,
+                  label: "Endereço",
+                  icon: Icons.home,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Endereço é obrigatório";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                _campoTexto(
+                  controller: _nascimentoController,
+                  label: "Data de nascimento (DD/MM/AAAA)",
+                  icon: Icons.cake,
+                  tipo: TextInputType.datetime,
+                  inputFormatters: [DataNascimentoInputFormatter()],
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Data de nascimento é obrigatória";
+                    }
+                    if (!RegExp(r"^\d{2}/\d{2}/\d{4}").hasMatch(value)) {
+                      return "Use o formato DD/MM/AAAA";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                _campoTexto(
+                  controller: _metodoPagamentoController,
+                  label: "Método de pagamento (ex: Cartão ****1234)",
+                  icon: Icons.payment,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Informe o método de pagamento";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                _campoTexto(
                   controller: _senhaController,
                   label: "Senha",
                   icon: Icons.lock,
@@ -260,14 +363,10 @@ class _CadastroScreenState extends State<CadastroScreen> {
                   validator: _validarSenha,
                   suffix: IconButton(
                     icon: Icon(
-                      _senhaVisivel
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+                      _senhaVisivel ? Icons.visibility : Icons.visibility_off,
                     ),
                     onPressed: () {
-                      setState(
-                        () => _senhaVisivel = !_senhaVisivel,
-                      );
+                      setState(() => _senhaVisivel = !_senhaVisivel);
                     },
                   ),
                 ),
@@ -292,8 +391,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                     ),
                     onPressed: () {
                       setState(
-                        () =>
-                            _confirmarSenhaVisivel = !_confirmarSenhaVisivel,
+                        () => _confirmarSenhaVisivel = !_confirmarSenhaVisivel,
                       );
                     },
                   ),
@@ -339,10 +437,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
                 onTap: () => Navigator.pop(context),
                 child: Text(
                   "Faça login",
-                  style: TextStyle(
-                    color: accent,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: accent, fontWeight: FontWeight.bold),
                 ),
               ),
             ],

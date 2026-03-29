@@ -218,7 +218,14 @@ def login_usuario(credenciais: UsuarioLogin, db: Session = Depends(get_db)):
         "token_type": "bearer",
         "usuario_id": usuario.id,
         "nome": usuario.nome,
-        "email": usuario.email
+        "email": usuario.email,
+        "cpf": usuario.cpf,
+        "telefone": usuario.telefone,
+        "endereco": usuario.endereco,
+        "data_nascimento": usuario.data_nascimento,
+        "email_verificado": usuario.email_verificado,
+        "rosto_verificado": usuario.rosto_verificado,
+        "documento_verificado": usuario.documento_verificado
     }
 
 @router.get("/perfil/{usuario_id}", response_model=UsuarioResponse)
