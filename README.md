@@ -1,4 +1,4 @@
-﻿# StarFast App (resumo único)
+﻿# StarFast App
 
 ## O que é
 App de compras com backend de autenticação (FastAPI + SQLite) + frontend Flutter.
