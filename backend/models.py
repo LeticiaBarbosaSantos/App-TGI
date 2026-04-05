@@ -71,6 +71,10 @@ class Usuario(Base):
     # Foto de perfil
     foto_perfil_url = Column(String(255))
     
+    # QR Code único para identificação
+    qr_code_data = Column(String(255), unique=True, index=True)  # Exemplo: usuario_123
+    qr_code_url = Column(String(500))  # URL da imagem do QR code salva
+    
     # Relacionamentos
     transacoes = relationship("Transacao", back_populates="usuario", cascade="all, delete-orphan")
     reconhecimentos = relationship("Reconhecimento", back_populates="usuario", cascade="all, delete-orphan")

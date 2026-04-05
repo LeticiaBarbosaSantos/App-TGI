@@ -6,6 +6,11 @@ os.environ["TF_USE_LEGACY_KERAS"] = "1"
 import cv2
 import numpy as np
 from tensorflow.keras.models import load_model
+import requests
+
+API_URL = "http://localhost:8000"
+USUARIO_ID = 1
+PRODUTO_ID_REXONA = 1
 
 # Carrega o modelo de forma limpa
 modelo = load_model("keras_model.h5", compile=False)
@@ -20,6 +25,35 @@ print("Sistema de Visão Computacional Ativo!")
 print("Pressione 'q' para encerrar.")
 
 produto_na_prateleira = True
+
+
+def adicionar_produto_ao_carrinho():
+    try:
+        resposta = requests.post(
+            f"{API_URL}/carrinho/{USUARIO_ID}/itens",
+            json={"produto_id": PRODUTO_ID_REXONA, "quantidade": 1},
+            timeout=3,
+        )
+        if resposta.status_code == 200:
+            print("Produto adicionado ao carrinho virtual.")
+        else:
+            print(f"Falha ao adicionar item: {resposta.status_code} - {resposta.text}")
+    except Exception as e:
+        print(f"Erro ao conectar com o backend: {e}")
+
+
+def remover_produto_do_carrinho():
+    try:
+        resposta = requests.delete(
+            f"{API_URL}/carrinho/{USUARIO_ID}/itens/{PRODUTO_ID_REXONA}",
+            timeout=3,
+        )
+        if resposta.status_code == 200:
+            print("Produto removido do carrinho virtual.")
+        else:
+            print(f"Falha ao remover item: {resposta.status_code} - {resposta.text}")
+    except Exception as e:
+        print(f"Erro ao conectar com o backend: {e}")
 
 while True:
     sucesso, imagem_quadro = camera.read()
@@ -44,15 +78,18 @@ while True:
     if "Rexona" in nome_classe and confianca > 0.8:
         status_texto = "PRODUTO DETECTADO: Rexona na prateleira"
         cor_borda = (0, 255, 0) # Verde
-        produto_na_prateleira = True
+        if not produto_na_prateleira:
+            print("\n>>> EVENTO: Rexona retornou à prateleira. Removendo do carrinho... <<<\n")
+            remover_produto_do_carrinho()
+            produto_na_prateleira = True
         
     elif "Vazia" in nome_classe and confianca > 0.8:
         status_texto = "ALERTA: Prateleira vazia! Produto no carrinho."
         cor_borda = (0, 0, 255) # Vermelho
         
-        # O gatilho para o Firebase (só aciona no momento que tira)
         if produto_na_prateleira:
-            print("\n>>> EVENTO: Rexona retirado! Enviando para o App... <<<\n")
+            print("\n>>> EVENTO: Rexona retirado! Adicionando ao carrinho... <<<\n")
+            adicionar_produto_ao_carrinho()
             produto_na_prateleira = False
             
     elif "ruídos" in nome_classe or "Mão" in nome_classe:

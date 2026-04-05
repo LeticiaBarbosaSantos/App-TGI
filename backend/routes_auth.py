@@ -9,6 +9,9 @@ import bcrypt
 import jwt
 from typing import Optional
 import os
+import qrcode
+import io
+import base64
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
@@ -97,6 +100,28 @@ def registrar_log(db: Session, usuario_id: Optional[int], tipo_acao: str,
     db.add(log)
     db.commit()
 
+def gerar_qr_code(usuario_id: int) -> str:
+    """Gera um QR code em base64 contendo o usuario_id"""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(f"usuario_{usuario_id}")
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Salva em memória
+    img_io = io.BytesIO()
+    img.save(img_io, "PNG")
+    img_io.seek(0)
+    
+    # Converte para base64
+    img_base64 = base64.b64encode(img_io.getvalue()).decode()
+    return f"data:image/png;base64,{img_base64}"
+
 # ==================== ROTAS DE AUTENTICAÇÃO ====================
 
 @router.post("/registro", response_model=UsuarioResponse)
@@ -146,6 +171,11 @@ def registrar_usuario(usuario: UsuarioRegistro, db: Session = Depends(get_db)):
     db.add(novo_usuario)
     db.commit()
     db.refresh(novo_usuario)
+    
+    # Gerar QR code único para o usuário
+    novo_usuario.qr_code_data = f"usuario_{novo_usuario.id}"
+    novo_usuario.qr_code_url = gerar_qr_code(novo_usuario.id)
+    db.commit()
     
     # Registrar no log
     registrar_log(db, novo_usuario.id, "cadastro", "Novo usuário registrado")

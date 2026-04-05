@@ -5,6 +5,9 @@ from models import Usuario, Transacao, Produto, Reconhecimento
 from database import get_db
 from pydantic import BaseModel
 from datetime import datetime
+import qrcode
+import io
+import base64
 # import cv2
 # import numpy as np
 from typing import Optional
@@ -95,6 +98,106 @@ def obter_produto(produto_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Produto não encontrado")
     return produto
 
+class CarrinhoItemCreate(BaseModel):
+    produto_id: int
+    quantidade: int = 1
+
+
+def get_or_create_carrinho(usuario_id: int, db: Session):
+    carrinho = db.query(Carrinho).filter(Carrinho.usuario_id == usuario_id).first()
+    if carrinho is None:
+        carrinho = Carrinho(usuario_id=usuario_id)
+        db.add(carrinho)
+        db.commit()
+        db.refresh(carrinho)
+    return carrinho
+
+@app.get("/carrinhos/{usuario_id}")
+def listar_carrinho(usuario_id: int, db: Session = Depends(get_db)):
+    """Listar itens do carrinho de um usuário"""
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    carrinho = get_or_create_carrinho(usuario_id, db)
+    itens = []
+    total = 0.0
+    for item in carrinho.itens:
+        preco_total = float(item.preco_total)
+        total += preco_total
+        itens.append({
+            "produto_id": item.produto_id,
+            "nome": item.produto.nome,
+            "quantidade": item.quantidade,
+            "preco_unitario": float(item.preco_unitario),
+            "preco_total": preco_total,
+        })
+
+    return {
+        "usuario_id": usuario_id,
+        "carrinho_id": carrinho.id,
+        "total": total,
+        "itens": itens,
+    }
+
+@app.post("/carrinho/{usuario_id}/itens")
+def adicionar_item_carrinho(usuario_id: int, item: CarrinhoItemCreate, db: Session = Depends(get_db)):
+    """Adicionar um item ao carrinho"""
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+
+    produto = db.query(Produto).filter(Produto.id == item.produto_id).first()
+    if not produto:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+
+    carrinho = get_or_create_carrinho(usuario_id, db)
+    item_existente = db.query(ItemCarrinho).filter(
+        ItemCarrinho.carrinho_id == carrinho.id,
+        ItemCarrinho.produto_id == produto.id
+    ).first()
+
+    if item_existente:
+        item_existente.quantidade += item.quantidade
+        item_existente.preco_total = float(item_existente.preco_unitario) * item_existente.quantidade
+    else:
+        item_existente = ItemCarrinho(
+            carrinho_id=carrinho.id,
+            produto_id=produto.id,
+            quantidade=item.quantidade,
+            preco_unitario=produto.preco,
+            preco_total=produto.preco * item.quantidade,
+        )
+        db.add(item_existente)
+
+    db.commit()
+    db.refresh(item_existente)
+
+    return {
+        "produto_id": item_existente.produto_id,
+        "nome": produto.nome,
+        "quantidade": item_existente.quantidade,
+        "preco_unitario": float(item_existente.preco_unitario),
+        "preco_total": float(item_existente.preco_total),
+    }
+
+@app.delete("/carrinho/{usuario_id}/itens/{produto_id}")
+def remover_item_carrinho(usuario_id: int, produto_id: int, db: Session = Depends(get_db)):
+    """Remover um item do carrinho"""
+    carrinho = get_or_create_carrinho(usuario_id, db)
+    item = db.query(ItemCarrinho).filter(
+        ItemCarrinho.carrinho_id == carrinho.id,
+        ItemCarrinho.produto_id == produto_id
+    ).first()
+
+    if not item:
+        raise HTTPException(status_code=404, detail="Item não encontrado no carrinho")
+
+    db.delete(item)
+    db.commit()
+
+    return {"removido": True, "produto_id": produto_id}
+
 # ==================== ROTAS DE TRANSAÇÕES ====================
 
 @app.post("/transacoes/criar")
@@ -176,6 +279,71 @@ async def processar_reconhecimento(usuario_id: int, tipo: str, db: Session = Dep
         "resultado": "sucesso",
         "confianca": 0.95,
         "tipo": tipo
+    }
+
+# ==================== ROTAS DE QR CODE ====================
+
+def gerar_qr_code(usuario_id: int) -> str:
+    """
+    Gera um QR code em base64 contendo o usuario_id
+    Retorna string base64 da imagem PNG
+    """
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(f"usuario_{usuario_id}")
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    # Salva em memória
+    img_io = io.BytesIO()
+    img.save(img_io, "PNG")
+    img_io.seek(0)
+    
+    # Converte para base64
+    img_base64 = base64.b64encode(img_io.getvalue()).decode()
+    return f"data:image/png;base64,{img_base64}"
+
+@app.get("/qrcode/usuario/{usuario_id}")
+def obter_qr_code_usuario(usuario_id: int, db: Session = Depends(get_db)):
+    """
+    Obter o QR code de um usuário
+    """
+    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuário não encontrado")
+    
+    if not usuario.qr_code_url:
+        # Gera QR code se não existir
+        usuario.qr_code_data = f"usuario_{usuario_id}"
+        usuario.qr_code_url = gerar_qr_code(usuario_id)
+        db.commit()
+    
+    return {
+        "usuario_id": usuario_id,
+        "qr_code_data": usuario.qr_code_data,
+        "qr_code_base64": usuario.qr_code_url,
+    }
+
+@app.post("/qrcode/validar")
+def validar_qr_code(qr_data: str, db: Session = Depends(get_db)):
+    """
+    Validar um QR code escaneado
+    Exemplo: qr_data = "usuario_1"
+    """
+    usuario = db.query(Usuario).filter(Usuario.qr_code_data == qr_data).first()
+    if not usuario:
+        raise HTTPException(status_code=404, detail="QR code inválido")
+    
+    return {
+        "usuario_id": usuario.id,
+        "nome": usuario.nome,
+        "email": usuario.email,
+        "identificado": True,
     }
 
 # ==================== HEALTH CHECK ====================

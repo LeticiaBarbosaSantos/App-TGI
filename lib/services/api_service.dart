@@ -147,7 +147,105 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-  
+
+  static Future<List<Map<String, dynamic>>> listarCarrinho(int usuarioId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/carrinhos/$usuarioId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['itens']);
+      } else {
+        throw Exception('Erro ao listar carrinho');
+      }
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> adicionarItemCarrinho({
+    required int usuarioId,
+    required int produtoId,
+    int quantidade = 1,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/carrinho/$usuarioId/itens'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'produto_id': produtoId,
+          'quantidade': quantidade,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final erro = jsonDecode(response.body);
+        throw Exception(erro['detail'] ?? 'Erro ao adicionar item');
+      }
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> removerItemCarrinho({
+    required int usuarioId,
+    required int produtoId,
+  }) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/carrinho/$usuarioId/itens/$produtoId'),
+      );
+
+      if (response.statusCode != 200) {
+        final erro = jsonDecode(response.body);
+        throw Exception(erro['detail'] ?? 'Erro ao remover item');
+      }
+      return {'removido': true};
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
+  // ==================== QR CODE ====================
+
+  static Future<Map<String, dynamic>> obterQRCodeUsuario(int usuarioId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/qrcode/usuario/$usuarioId'),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Erro ao obter QR code');
+      }
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> validarQRCode(String qrData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/qrcode/validar?qr_data=$qrData'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final erro = jsonDecode(response.body);
+        throw Exception(erro['detail'] ?? 'QR code inválido');
+      }
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
   // ==================== TRANSAÇÕES ====================
   
   static Future<Map<String, dynamic>> criarTransacao({

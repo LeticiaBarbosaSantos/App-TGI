@@ -20,17 +20,36 @@ class SmartPayApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: "/login", 
-      routes: {
-        "/login": (context) => const LoginScreen(),
-        "/cadastro": (context) => const CadastroScreen(),
-        "/home": (context) => const HomeScreen(),
-        "/carrinho": (context) => const CarrinhoVirtualScreen(),
-        "/identificacao": (context) => const IdentificacaoScreen(),
-        "/qrcode": (context) => const QRCodeScreen(),
-        "/pagamento_concluida": (context) => const PagamentoConcluidoScreen(),
-        "/perfil": (context) => const PerfilScreen(),
-        "/pagamento": (context) => const PagamentoScreen(),
+      initialRoute: "/login",
+      onGenerateRoute: (settings) {
+        switch (settings.name) {
+          case "/login":
+            return MaterialPageRoute(builder: (_) => const LoginScreen());
+          case "/cadastro":
+            return MaterialPageRoute(builder: (_) => const CadastroScreen());
+          case "/home":
+            final usuarioId = settings.arguments as int? ?? 1;
+            return MaterialPageRoute(
+              builder: (_) => HomeScreen(usuarioId: usuarioId),
+            );
+          case "/carrinho":
+            final usuarioId = settings.arguments as int? ?? 1;
+            return MaterialPageRoute(
+              builder: (_) => CarrinhoVirtualScreen(usuarioId: usuarioId),
+            );
+          case "/identificacao":
+            return MaterialPageRoute(builder: (_) => const IdentificacaoScreen());
+          case "/qrcode":
+            return MaterialPageRoute(builder: (_) => const QRCodeScreen());
+          case "/pagamento_concluida":
+            return MaterialPageRoute(builder: (_) => const PagamentoConcluidoScreen());
+          case "/perfil":
+            return MaterialPageRoute(builder: (_) => const PerfilScreen());
+          case "/pagamento":
+            return MaterialPageRoute(builder: (_) => const PagamentoScreen());
+          default:
+            return MaterialPageRoute(builder: (_) => const LoginScreen());
+        }
       },
     );
   }
