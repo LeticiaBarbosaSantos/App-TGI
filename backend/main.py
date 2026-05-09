@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from models import Usuario, Transacao, Produto, Reconhecimento
+from models import Usuario, Transacao, Produto, Reconhecimento, Carrinho, ItemCarrinho
 from database import get_db
 from pydantic import BaseModel
 from datetime import datetime

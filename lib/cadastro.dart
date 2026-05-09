@@ -250,7 +250,11 @@ class _CadastroScreenState extends State<CadastroScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
           Text(
+<<<<<<< Updated upstream
             "Crie sua conta StarFast",
+=======
+            "Crie sua conta no StarFast",
+>>>>>>> Stashed changes
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,

@@ -1,12 +1,17 @@
 fastapi==0.104.1
 uvicorn==0.24.0
 sqlalchemy==2.0.23
-psycopg2-binary==2.9.9
+# psycopg2-binary==2.9.9  # não necessário para SQLite local
 python-multipart==0.0.6
 opencv-python==4.8.1.78
-tensorflow==2.14.0
-pydantic==2.5.0
+pydantic==2.12.5
 python-dotenv==1.0.0
 bcrypt==4.1.1
+<<<<<<< Updated upstream
 PyJWT==2.8.1
 email-validator==2.1.0
+=======
+PyJWT==2.12.1
+email-validator==2.1.0
+qrcode[pil]==7.4.2
+>>>>>>> Stashed changes

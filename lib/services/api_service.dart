@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
+<<<<<<< Updated upstream
   // Ajuste o host conforme seu ambiente:
   // - Android Emulator: 10.0.2.2
   // - iOS Simulator / desktop: 127.0.0.1
@@ -19,6 +20,11 @@ class ApiService {
   static String? currentUserNascimento;
   static String? currentUserMetodoPagamento;
 
+=======
+  // Use 10.0.2.2 para o emulador Android acessar o servidor local do host
+  static const String baseUrl = "http://127.0.0.1:8000";
+  
+>>>>>>> Stashed changes
   // ==================== AUTENTICAÇÃO ====================
 
   static Future<Map<String, dynamic>> loginUsuario({
