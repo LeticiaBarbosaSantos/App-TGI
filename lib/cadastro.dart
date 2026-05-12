@@ -124,7 +124,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
           Text(
-            "Crie sua conta SmartPay",
+            "Crie sua conta no StarFast",
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,

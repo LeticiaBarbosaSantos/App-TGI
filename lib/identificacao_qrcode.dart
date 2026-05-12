@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'botao_menu.dart';
 import 'services/api_service.dart';
 
@@ -10,44 +11,22 @@ class QRCodeScreen extends StatefulWidget {
 }
 
 class _QRCodeScreenState extends State<QRCodeScreen> {
-  final TextEditingController qrController = TextEditingController();
-  bool _loading = false;
-  String _mensagem = '';
+  String? _qrData;
 
-  Future<void> _validarQRCode() async {
-    String qrData = qrController.text.trim();
+  @override
+  void initState() {
+    super.initState();
+    _gerarQRCode();
+  }
 
-    if (qrData.isEmpty) {
-      setState(() => _mensagem = 'Por favor, escaneie ou insira um QR code');
-      return;
-    }
+  void _gerarQRCode() {
+    final userId = ApiService.currentUserId;
+    final userName = ApiService.currentUserName;
 
-    setState(() => _loading = true);
-
-    try {
-      final response = await ApiService.validarQRCode(qrData);
-
-      if (!mounted) return;
-
-      // QR code válido - ir para o carrinho do usuário
-      setState(() => _mensagem = 'Usuário identificado!');
-
-      Navigator.pushReplacementNamed(
-        context,
-        '/carrinho',
-        arguments: response['usuario_id'],
-      );
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _mensagem = 'QR code inválido ou não encontrado');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erro: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() => _loading = false);
+    if (userId != null) {
+      _qrData = 'USER_ID:$userId;NAME:$userName;TIMESTAMP:${DateTime.now().millisecondsSinceEpoch}';
+    } else {
+      _qrData = 'ERROR:NO_USER_LOGGED_IN';
     }
   }
 
@@ -64,7 +43,13 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: darkBlue),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacementNamed(context, "/home");
+            }
+          },
         ),
       ),
 
@@ -109,80 +94,39 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
               ),
             ),
             const SizedBox(height: 50),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: qrController,
-                    enabled: !_loading,
-                    decoration: InputDecoration(
-                      labelText: 'Digite o código QR ou escaneie',
-                      filled: true,
-                      fillColor: Colors.grey.shade50,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      prefixIcon: const Icon(Icons.qr_code, color: darkBlue),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  if (_mensagem.isNotEmpty)
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: _mensagem.contains('identificado')
-                          ? Colors.green.shade100
-                          : Colors.red.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        _mensagem,
-                        style: TextStyle(
-                          color: _mensagem.contains('identificado')
-                            ? Colors.green
-                            : Colors.red,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _loading ? null : _validarQRCode,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accent,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _loading
-                        ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        )
-                        : const Text(
-                          'Validar QR Code',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                    ),
-                  ),
-                ],
+            Container(
+              width: 230,
+              height: 230,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: accent, width: 4),
               ),
+              child: _qrData != null
+                  ? QrImageView(
+                      data: _qrData!,
+                      version: QrVersions.auto,
+                      size: 180.0,
+                      backgroundColor: Colors.white,
+                    )
+                  : const Center(
+                      child: CircularProgressIndicator(),
+                    ),
             ),
+
+            const SizedBox(height: 20),
+
+            if (_qrData != null && _qrData!.startsWith('ERROR'))
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 40),
+                child: Text(
+                  'Erro: Nenhum usuário logado. Faça login primeiro.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

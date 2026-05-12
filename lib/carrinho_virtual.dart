@@ -3,9 +3,7 @@ import 'botao_menu.dart';
 import 'services/api_service.dart';
 
 class CarrinhoVirtualScreen extends StatefulWidget {
-  final int usuarioId;
-
-  const CarrinhoVirtualScreen({super.key, required this.usuarioId});
+  const CarrinhoVirtualScreen({super.key});
 
   @override
   State<CarrinhoVirtualScreen> createState() => _CarrinhoVirtualScreenState();
@@ -13,18 +11,25 @@ class CarrinhoVirtualScreen extends StatefulWidget {
 
 class _CarrinhoVirtualScreenState extends State<CarrinhoVirtualScreen> {
   late Future<List<Map<String, dynamic>>> _futureItens;
-  late final int usuarioId;
+  int? _usuarioId;
 
   @override
   void initState() {
     super.initState();
-    usuarioId = widget.usuarioId;
-    _futureItens = ApiService.listarCarrinho(usuarioId);
+    _usuarioId = ApiService.currentUserId;
+    _futureItens = _carregarItens();
+  }
+
+  Future<List<Map<String, dynamic>>> _carregarItens() async {
+    if (_usuarioId == null) {
+      return [];
+    }
+    return ApiService.listarCarrinho(_usuarioId!);
   }
 
   Future<void> _atualizarCarrinho() async {
     setState(() {
-      _futureItens = ApiService.listarCarrinho(usuarioId);
+      _futureItens = _carregarItens();
     });
   }
 
@@ -77,7 +82,10 @@ class _CarrinhoVirtualScreenState extends State<CarrinhoVirtualScreen> {
             final itens = snapshot.data ?? [];
             final total = itens.fold<double>(0, (previousValue, item) {
               final precoTotal = item['preco_total'];
-              return previousValue + (precoTotal is num ? precoTotal.toDouble() : double.parse(precoTotal.toString()));
+              return previousValue +
+                  (precoTotal is num
+                      ? precoTotal.toDouble()
+                      : double.tryParse(precoTotal.toString()) ?? 0);
             });
 
             return Column(
@@ -107,9 +115,10 @@ class _CarrinhoVirtualScreenState extends State<CarrinhoVirtualScreen> {
                         final precoTotal = item['preco_total'];
                         return ListTile(
                           title: Text(item['nome'] ?? 'Produto sem nome'),
-                          subtitle: Text('Quantidade: ${item['quantidade']}'),
+                          subtitle:
+                              Text('Quantidade: ${item['quantidade'] ?? 1}'),
                           trailing: Text(
-                            'R\$ ${precoTotal is num ? precoTotal.toStringAsFixed(2) : double.parse(precoTotal.toString()).toStringAsFixed(2)}',
+                            'R\$ ${precoTotal is num ? precoTotal.toStringAsFixed(2) : double.tryParse(precoTotal.toString())?.toStringAsFixed(2) ?? '0.00'}',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         );
@@ -133,9 +142,11 @@ class _CarrinhoVirtualScreenState extends State<CarrinhoVirtualScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/pagamento');
-                  },
+                  onPressed: itens.isEmpty
+                      ? null
+                      : () {
+                          Navigator.pushNamed(context, '/pagamento');
+                        },
                   child: const Text(
                     'Finalizar Pagamento',
                     style: TextStyle(
