@@ -3,9 +3,10 @@ import 'botao_menu.dart';
 import 'services/api_service.dart';
 
 class HomeScreen extends StatelessWidget {
+  final int usuarioId;
   final String userName;
 
-  const HomeScreen({super.key, this.userName = "Usuário"});
+  const HomeScreen({super.key, required this.usuarioId, this.userName = "Usuário"});
 
   String _resolvedUserName(BuildContext context) {
     final arg = ModalRoute.of(context)?.settings.arguments;
@@ -105,7 +106,11 @@ class HomeScreen extends StatelessWidget {
               _atalho(
                 icon: Icons.shopping_cart,
                 label: "Carrinho",
-                onPressed: () => Navigator.pushNamed(context, "/carrinho"),
+                onPressed: () => Navigator.pushNamed(
+                  context,
+                  "/carrinho",
+                  arguments: usuarioId,
+                ),
               ),
               _atalho(
                 icon: Icons.history,
@@ -132,16 +137,19 @@ class HomeScreen extends StatelessWidget {
             nome: "Supermercado Ideal",
             endereco: "Rua das Flores, 120",
             contexto: context,
+            usuarioId: usuarioId,
           ),
           _estabelecimentoCard(
             nome: "Padaria Central",
             endereco: "Av. Paulista, 200",
             contexto: context,
+            usuarioId: usuarioId,
           ),
           _estabelecimentoCard(
             nome: "Loja da Esquina",
             endereco: "Rua Azul, 88",
             contexto: context,
+            usuarioId: usuarioId,
           ),
 
           const SizedBox(height: 30),
@@ -169,6 +177,7 @@ class HomeScreen extends StatelessWidget {
     required String nome,
     required String endereco,
     required BuildContext contexto,
+    required int usuarioId,
   }) {
     const Color darkBlue = Color(0xFF07142B);
 
@@ -194,7 +203,11 @@ class HomeScreen extends StatelessWidget {
         ),
         trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: darkBlue),
         onTap: () {
-          Navigator.pushNamed(contexto, "/carrinho");
+          Navigator.pushNamed(
+            contexto,
+            "/carrinho",
+            arguments: usuarioId,
+          );
         },
       ),
     );

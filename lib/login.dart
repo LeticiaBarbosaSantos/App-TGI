@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacementNamed(
         context,
         "/home",
-        arguments: response['usuario_id'],
+        arguments: response['usuario_id'] ?? response['id'],
       );
     } catch (e) {
       if (!mounted) return;

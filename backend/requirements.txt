@@ -9,9 +9,13 @@ python-dotenv==1.0.0
 bcrypt==4.1.1
 <<<<<<< Updated upstream
 PyJWT==2.8.1
+<<<<<<< HEAD
 email-validator==2.1.0
 =======
 PyJWT==2.12.1
 email-validator==2.1.0
 qrcode[pil]==7.4.2
 >>>>>>> Stashed changes
+=======
+email-validator==2.1.0\nqrcode[pil]==7.4.2
+>>>>>>> f3148affb16ba276dddac5db18ef40ba255769ef

@@ -2,6 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
   // Ajuste o host conforme seu ambiente:
   // - Android Emulator: 10.0.2.2
@@ -9,6 +10,10 @@ class ApiService {
   // - Dispositivo real (mesma rede do PC): 192.168.x.x
   static const String baseUrl =
       "http://10.0.2.2:8000"; // padrão para Android emulador
+=======
+  // Use 10.0.2.2 para o emulador Android acessar o servidor local do host
+  static const String baseUrl = "http://10.0.2.2:8000";
+>>>>>>> f3148affb16ba276dddac5db18ef40ba255769ef
 
   // Estado do usuário logado em memória (simplificado)
   static int? currentUserId;
@@ -19,10 +24,13 @@ class ApiService {
   static String? currentUserEndereco;
   static String? currentUserNascimento;
   static String? currentUserMetodoPagamento;
+<<<<<<< HEAD
 
 =======
   // Use 10.0.2.2 para o emulador Android acessar o servidor local do host
   static const String baseUrl = "http://127.0.0.1:8000";
+=======
+>>>>>>> f3148affb16ba276dddac5db18ef40ba255769ef
   
 >>>>>>> Stashed changes
   // ==================== AUTENTICAÇÃO ====================
@@ -40,7 +48,11 @@ class ApiService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+<<<<<<< HEAD
         currentUserId = data['usuario_id'];
+=======
+        currentUserId = data['usuario_id'] ?? data['id'];
+>>>>>>> f3148affb16ba276dddac5db18ef40ba255769ef
         currentUserName = data['nome'];
         currentUserEmail = data['email'];
         currentUserCpf = data['cpf'];
@@ -205,6 +217,107 @@ class ApiService {
     }
   }
 
+<<<<<<< HEAD
+=======
+  static Future<List<Map<String, dynamic>>> listarCarrinho(int usuarioId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/carrinhos/$usuarioId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return List<Map<String, dynamic>>.from(data['itens']);
+      } else {
+        throw Exception('Erro ao listar carrinho');
+      }
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> adicionarItemCarrinho({
+    required int usuarioId,
+    required int produtoId,
+    int quantidade = 1,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/carrinho/$usuarioId/itens'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'produto_id': produtoId,
+          'quantidade': quantidade,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final erro = jsonDecode(response.body);
+        throw Exception(erro['detail'] ?? 'Erro ao adicionar item');
+      }
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> removerItemCarrinho({
+    required int usuarioId,
+    required int produtoId,
+  }) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/carrinho/$usuarioId/itens/$produtoId'),
+      );
+
+      if (response.statusCode != 200) {
+        final erro = jsonDecode(response.body);
+        throw Exception(erro['detail'] ?? 'Erro ao remover item');
+      }
+      return {'removido': true};
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
+  // ==================== QR CODE ====================
+
+  static Future<Map<String, dynamic>> obterQRCodeUsuario(int usuarioId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/qrcode/usuario/$usuarioId'),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception('Erro ao obter QR code');
+      }
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
+  static Future<Map<String, dynamic>> validarQRCode(String qrData) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/qrcode/validar?qr_data=$qrData'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final erro = jsonDecode(response.body);
+        throw Exception(erro['detail'] ?? 'QR code inválido');
+      }
+    } catch (e) {
+      throw Exception('Erro: $e');
+    }
+  }
+
+>>>>>>> f3148affb16ba276dddac5db18ef40ba255769ef
   // ==================== TRANSAÇÕES ====================
 
   static Future<Map<String, dynamic>> criarTransacao({
