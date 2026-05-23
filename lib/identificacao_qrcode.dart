@@ -36,20 +36,14 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
     const Color accent = Color(0xFF568F7C);
 
     return Scaffold(
-      bottomNavigationBar: const BotaoMenu(),
+      bottomNavigationBar: const BotaoMenu(rotaAtual: '/qrcode'),
 
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: darkBlue),
-          onPressed: () {
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            } else {
-              Navigator.pushReplacementNamed(context, "/home");
-            }
-          },
+          onPressed: () => Navigator.pushReplacementNamed(context, "/home"),
         ),
       ),
 

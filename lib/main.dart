@@ -35,7 +35,7 @@ class StarFastApp extends StatelessWidget {
           case "/carrinho":
             final usuarioId = settings.arguments as int? ?? 1;
             return MaterialPageRoute(
-              builder: (_) => CarrinhoVirtualScreen(usuarioId: usuarioId),
+              builder: (_) => CarrinhoVirtualScreen(),
             );
           case "/identificacao":
             return MaterialPageRoute(builder: (_) => const IdentificacaoScreen());

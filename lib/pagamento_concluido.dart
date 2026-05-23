@@ -9,7 +9,7 @@ class PagamentoConcluidoScreen extends StatelessWidget {
     const Color accent = Color(0xFF568F7C);
 
     return Scaffold(
-      bottomNavigationBar: const BotaoMenu(),
+      bottomNavigationBar: const BotaoMenu(rotaAtual: '/pagamento-concluido'),
 
       body: Center(
         child: Column(

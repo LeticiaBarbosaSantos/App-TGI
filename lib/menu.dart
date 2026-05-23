@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: const BotaoMenu(),
+      bottomNavigationBar: const BotaoMenu(rotaAtual: '/home'),
 
       body: ListView(
         padding: const EdgeInsets.all(16),

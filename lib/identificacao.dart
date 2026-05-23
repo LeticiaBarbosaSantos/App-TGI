@@ -12,7 +12,7 @@ class IdentificacaoScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: const BotaoMenu(),
+      bottomNavigationBar: const BotaoMenu(rotaAtual: '/identificacao'),
 
     appBar: AppBar(
       backgroundColor: Colors.white,

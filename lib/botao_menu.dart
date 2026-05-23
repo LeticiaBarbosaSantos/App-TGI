@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 
 class BotaoMenu extends StatelessWidget {
-  const BotaoMenu({super.key});
+  final String rotaAtual; // <-- Criamos a variável aqui
+
+  const BotaoMenu({super.key, required this.rotaAtual});
 
   @override
   Widget build(BuildContext context) {
     const Color darkBlue = Color(0xFF07142B);
     const Color accent = Color(0xFF568F7C);
-
-    // Define qual aba está ativa
-    String currentRoute = ModalRoute.of(context)?.settings.name ?? "/home";
 
     return Container(
       height: 65,
@@ -32,7 +31,7 @@ class BotaoMenu extends StatelessWidget {
             route: "/home",
             icon: Icons.home,
             label: "Home",
-            active: currentRoute == "/home",
+            active: rotaAtual == "/home", // Compara com a variável exata
             activeColor: accent,
             inactiveColor: darkBlue,
           ),
@@ -43,7 +42,7 @@ class BotaoMenu extends StatelessWidget {
             route: "/perfil",
             icon: Icons.person,
             label: "Perfil",
-            active: currentRoute == "/perfil",
+            active: rotaAtual == "/perfil", // Compara com a variável exata
             activeColor: accent,
             inactiveColor: darkBlue,
           ),
@@ -54,7 +53,7 @@ class BotaoMenu extends StatelessWidget {
             route: "/carrinho",
             icon: Icons.shopping_cart,
             label: "Carrinho",
-            active: currentRoute == "/carrinho",
+            active: rotaAtual == "/carrinho", // Compara com a variável exata
             activeColor: accent,
             inactiveColor: darkBlue,
           ),
@@ -65,7 +64,7 @@ class BotaoMenu extends StatelessWidget {
             route: "/qrcode",
             icon: Icons.qr_code_scanner,
             label: "QR Code",
-            active: currentRoute == "/qrcode",
+            active: rotaAtual == "/qrcode", // Compara com a variável exata
             activeColor: accent,
             inactiveColor: darkBlue,
           ),
@@ -85,7 +84,8 @@ class BotaoMenu extends StatelessWidget {
       }) {
     return GestureDetector(
       onTap: () {
-        if (ModalRoute.of(context)?.settings.name != route) {
+        // Só navega se o botão clicado for diferente da tela atual
+        if (rotaAtual != route) {
           Navigator.pushReplacementNamed(context, route);
         }
       },

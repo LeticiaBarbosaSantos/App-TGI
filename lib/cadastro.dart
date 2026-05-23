@@ -38,7 +38,7 @@ class TelefoneInputFormatter extends TextInputFormatter {
     if (digits.isEmpty) {
       text = '';
     } else if (digits.length <= 2) {
-      text = '(${digits}';
+      text = '($digits';
     } else if (digits.length <= 6) {
       text = '(${digits.substring(0, 2)}) ${digits.substring(2)}';
     } else if (digits.length <= 10) {
@@ -181,26 +181,26 @@ class _CadastroScreenState extends State<CadastroScreen> {
         senha: _senhaController.text,
         telefone: telefone,
         // Campos extras para perfil
-        endereco: _enderecoController.text.trim().isEmpty
-            ? null
-            : _enderecoController.text.trim(),
-        nascimento: _nascimentoController.text.trim().isEmpty
-            ? null
-            : _nascimentoController.text.trim(),
-        metodo_pagamento: _metodoPagamentoController.text.trim().isEmpty
-            ? null
-            : _metodoPagamentoController.text.trim(),
+        //endereco: _enderecoController.text.trim().isEmpty
+        //    ? null
+        //    : _enderecoController.text.trim(),
+        //nascimento: _nascimentoController.text.trim().isEmpty
+        //      ? null
+        //    : _nascimentoController.text.trim(),
+        //metodo_pagamento: _metodoPagamentoController.text.trim().isEmpty
+        //    ? null
+        //    : _metodoPagamentoController.text.trim(),
       );
 
-      ApiService.currentUserId = resposta['usuario_id'] ?? resposta['id'];
-      ApiService.currentUserName = _nomeController.text;
-      ApiService.currentUserEmail = _emailController.text;
-      ApiService.currentUserCpf = cpf;
-      ApiService.currentUserTelefone = telefone;
-      ApiService.currentUserEndereco = _enderecoController.text.trim();
-      ApiService.currentUserNascimento = _nascimentoController.text.trim();
-      ApiService.currentUserMetodoPagamento = _metodoPagamentoController.text
-          .trim();
+      //ApiService.currentUserId = resposta['usuario_id'] ?? resposta['id'];
+      //ApiService.currentUserName = _nomeController.text;
+      //ApiService.currentUserEmail = _emailController.text;
+      //ApiService.currentUserCpf = cpf;
+      //ApiService.currentUserTelefone = telefone;
+      //ApiService.currentUserEndereco = _enderecoController.text.trim();
+      //ApiService.currentUserNascimento = _nascimentoController.text.trim();
+      //ApiService.currentUserMetodoPagamento = _metodoPagamentoController.text
+      //    .trim();
 
       if (!mounted) return;
 
@@ -250,11 +250,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         children: [
           Text(
-<<<<<<< Updated upstream
-            "Crie sua conta StarFast",
-=======
             "Crie sua conta no StarFast",
->>>>>>> Stashed changes
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,

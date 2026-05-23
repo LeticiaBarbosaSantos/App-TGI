@@ -1,13 +1,17 @@
-from database import SessionLocal
-from models import Produto
+from database import SessionLocal, engine
+from models import Produto, Base
 
-# Abre a conexão com o banco
+# 1. ESSA É A LINHA MÁGICA: Cria as tabelas se elas não existirem
+Base.metadata.create_all(bind=engine)
+
+# 2. Abre a conexão com o banco
 db = SessionLocal()
 
-# Cria o produto Rexona
+# 3. Cria o produto Rexona
 rexona = Produto(nome="Rexona", preco=19.90, estoque=100)
 db.add(rexona)
 db.commit()
+db.refresh(rexona) # Garante que o ID venha preenchido
 
-print("Produto cadastrado com sucesso! O ID do Rexona agora é:", rexona.id)
+print(f"✅ SUCESSO! O ID do Rexona é: {rexona.id}")
 db.close()

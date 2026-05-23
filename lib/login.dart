@@ -40,6 +40,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
 
+      // ==========================================================
+      // A MÁGICA ACONTECE AQUI: Costurando o bolso e guardando o ID!
+      ApiService.currentUserId = response['usuario_id'] ?? response['id'];
+      // ==========================================================
+
       // Login bem-sucedido - salvar dados e ir para home
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -48,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
 
-      // Navegar para home com ID do usuário
+      // Navegar para home
       Navigator.pushReplacementNamed(
         context,
         "/home",

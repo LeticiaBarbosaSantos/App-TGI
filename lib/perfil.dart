@@ -22,11 +22,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
   final TextEditingController pagamentoController = TextEditingController();
 
   bool _carregando = true;
+  bool _editando = false;
 
-  @override
+@override
   void initState() {
     super.initState();
-    _carregarPerfil();
+    
+    // Diz para o Flutter executar a busca apenas após a tela renderizar o 1º frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _carregarPerfil();
+    });
   }
 
   Future<void> _carregarPerfil() async {
@@ -53,10 +58,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
           perfil['endereco'] ?? ApiService.currentUserEndereco ?? '';
       nascimentoController.text =
           perfil['data_nascimento'] ?? ApiService.currentUserNascimento ?? '';
-      pagamentoController.text =
-          perfil['metodo_pagamento'] ??
-          ApiService.currentUserMetodoPagamento ??
-          '';
+          
+      // Substitua a linha antiga do pagamentoController por este bloco:
+      final oQueVeioDoBanco = perfil['metodo_pagamento'];
+      if (oQueVeioDoBanco != null && oQueVeioDoBanco.toString().isNotEmpty) {
+        pagamentoController.text = oQueVeioDoBanco;
+      } else {
+        pagamentoController.text = ApiService.currentUserMetodoPagamento ?? '';
+      }
 
       if (pagamentoController.text.isEmpty) {
         pagamentoController.text = 'Nenhum método cadastrado';
@@ -95,6 +104,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     try {
       await ApiService.atualizarPerfil(usuarioId: usuarioId, dados: dados);
+      ApiService.currentUserMetodoPagamento = pagamentoController.text.trim();
+      setState(() {
+        _editando = false; // Tranca os campos novamente após o sucesso
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Perfil atualizado com sucesso!')),
       );
@@ -114,13 +127,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: const BotaoMenu(),
+      bottomNavigationBar: const BotaoMenu(rotaAtual: '/perfil'),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: darkBlue),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
         ),
         title: Text(
           'Perfil',
@@ -144,16 +157,34 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 child: const Icon(Icons.person, size: 45, color: Colors.white),
               ),
               const SizedBox(height: 12),
-              Text(
-                'Editar Perfil',
-                style: TextStyle(
-                  color: darkBlue,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _editando = !_editando; // Liga e desliga o cadeado
+                  });
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      _editando ? Icons.close : Icons.edit, 
+                      color: darkBlue, 
+                      size: 18
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      _editando ? 'Cancelar Edição' : 'Editar Perfil',
+                      style: TextStyle(
+                        color: darkBlue,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
-          ),
+          ),      
           const SizedBox(height: 25),
           _input('Nome completo', nomeController),
           _input('E-mail', emailController),
@@ -203,6 +234,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         const SizedBox(height: 6),
         TextField(
           controller: controller,
+          readOnly: !_editando,
           cursorColor: accent,
           decoration: InputDecoration(
             focusedBorder: UnderlineInputBorder(

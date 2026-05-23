@@ -40,10 +40,14 @@ class _CarrinhoVirtualScreenState extends State<CarrinhoVirtualScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      bottomNavigationBar: const BotaoMenu(),
+      bottomNavigationBar: const BotaoMenu(rotaAtual: '/carrinho'),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: darkBlue),
+          onPressed: () => Navigator.pushReplacementNamed(context, "/home"),
+        ),  
         title: const Text(
           'Carrinho',
           style: TextStyle(

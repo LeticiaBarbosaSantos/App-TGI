@@ -10,7 +10,12 @@ load_dotenv()
 USE_SQLITE = True
 
 if USE_SQLITE:
-    DATABASE_URL = "sqlite:///./starfast.db"
+    # Pega o caminho absoluto da pasta atual (onde está o database.py)
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    # Força o banco a ser sempre o arquivo starfast.db dentro desta mesma pasta
+    DB_PATH = os.path.join(BASE_DIR, "starfast.db")
+    
+    DATABASE_URL = f"sqlite:///{DB_PATH}"
 else:
     DATABASE_URL = os.getenv(
         "DATABASE_URL",

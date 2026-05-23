@@ -2,20 +2,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-  // Ajuste o host conforme seu ambiente:
-  // - Android Emulator: 10.0.2.2
-  // - iOS Simulator / desktop: 127.0.0.1
-  // - Dispositivo real (mesma rede do PC): 192.168.x.x
-  static const String baseUrl =
-      "http://10.0.2.2:8000"; // padrão para Android emulador
-=======
   // Use 10.0.2.2 para o emulador Android acessar o servidor local do host
-  static const String baseUrl = "http://10.0.2.2:8000";
->>>>>>> f3148affb16ba276dddac5db18ef40ba255769ef
+  static const String baseUrl = "http://127.0.0.1:8000";
 
-  // Estado do usuário logado em memória (simplificado)
+  // ==================== VARIÁVEIS DE SESSÃO ====================
   static int? currentUserId;
   static String? currentUserName;
   static String? currentUserEmail;
@@ -24,17 +14,9 @@ class ApiService {
   static String? currentUserEndereco;
   static String? currentUserNascimento;
   static String? currentUserMetodoPagamento;
-<<<<<<< HEAD
-
-=======
-  // Use 10.0.2.2 para o emulador Android acessar o servidor local do host
-  static const String baseUrl = "http://127.0.0.1:8000";
-=======
->>>>>>> f3148affb16ba276dddac5db18ef40ba255769ef
   
->>>>>>> Stashed changes
   // ==================== AUTENTICAÇÃO ====================
-
+  
   static Future<Map<String, dynamic>> loginUsuario({
     required String email,
     required String senha,
@@ -43,24 +25,14 @@ class ApiService {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'senha': senha}),
+        body: jsonEncode({
+          'email': email,
+          'senha': senha,
+        }),
       );
-
+      
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-<<<<<<< HEAD
-        currentUserId = data['usuario_id'];
-=======
-        currentUserId = data['usuario_id'] ?? data['id'];
->>>>>>> f3148affb16ba276dddac5db18ef40ba255769ef
-        currentUserName = data['nome'];
-        currentUserEmail = data['email'];
-        currentUserCpf = data['cpf'];
-        currentUserTelefone = data['telefone'];
-        currentUserEndereco = data['endereco'];
-        currentUserNascimento = data['data_nascimento'] ?? data['nascimento'];
-        currentUserMetodoPagamento = data['metodo_pagamento'];
-        return data;
+        return jsonDecode(response.body);
       } else {
         final erro = jsonDecode(response.body);
         throw Exception(erro['detail'] ?? 'Erro ao fazer login');
@@ -69,16 +41,13 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
+  
   static Future<Map<String, dynamic>> registrarUsuario({
     required String nome,
     required String email,
     required String cpf,
     required String senha,
     String? telefone,
-    String? endereco,
-    String? nascimento,
-    String? metodo_pagamento,
   }) async {
     try {
       final response = await http.post(
@@ -90,23 +59,11 @@ class ApiService {
           'cpf': cpf,
           'senha': senha,
           'telefone': telefone,
-          'endereco': endereco,
-          'data_nascimento': nascimento,
-          'metodo_pagamento': metodo_pagamento,
         }),
       );
-
+      
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        currentUserId = data['usuario_id'] ?? data['id'];
-        currentUserName = data['nome'];
-        currentUserEmail = data['email'];
-        currentUserCpf = data['cpf'];
-        currentUserTelefone = data['telefone'];
-        currentUserEndereco = data['endereco'];
-        currentUserNascimento = data['data_nascimento'] ?? data['nascimento'];
-        currentUserMetodoPagamento = data['metodo_pagamento'];
-        return data;
+        return jsonDecode(response.body);
       } else {
         final erro = jsonDecode(response.body);
         throw Exception(erro['detail'] ?? 'Erro ao registrar usuário');
@@ -115,25 +72,17 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
+  
   // ==================== USUÁRIOS ====================
-
+  
   static Future<Map<String, dynamic>> obterPerfil(int usuarioId) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/auth/perfil/$usuarioId'),
       );
-
+      
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        currentUserId = data['id'] ?? currentUserId;
-        currentUserName = data['nome'] ?? currentUserName;
-        currentUserEmail = data['email'] ?? currentUserEmail;
-        currentUserCpf = data['cpf'] ?? currentUserCpf;
-        currentUserTelefone = data['telefone'] ?? currentUserTelefone;
-        currentUserEndereco = data['endereco'] ?? currentUserEndereco;
-        currentUserNascimento = data['data_nascimento'] ?? data['nascimento'] ?? currentUserNascimento;
-        return data;
+        return jsonDecode(response.body);
       } else {
         throw Exception('Usuário não encontrado');
       }
@@ -141,7 +90,7 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
+  
   static Future<Map<String, dynamic>> atualizarPerfil({
     required int usuarioId,
     required Map<String, dynamic> dados,
@@ -152,18 +101,9 @@ class ApiService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(dados),
       );
-
+      
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        currentUserName = data['nome'] ?? currentUserName;
-        currentUserEmail = data['email'] ?? currentUserEmail;
-        currentUserCpf = data['cpf'] ?? currentUserCpf;
-        currentUserTelefone = data['telefone'] ?? currentUserTelefone;
-        currentUserEndereco = data['endereco'] ?? currentUserEndereco;
-        currentUserNascimento = data['nascimento'] ?? currentUserNascimento;
-        currentUserMetodoPagamento =
-            data['metodo_pagamento'] ?? currentUserMetodoPagamento;
-        return data;
+        return jsonDecode(response.body);
       } else {
         throw Exception('Erro ao atualizar perfil');
       }
@@ -171,13 +111,13 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
+  
   static Future<void> verificarRosto(int usuarioId) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/verificar-rosto/$usuarioId'),
       );
-
+      
       if (response.statusCode != 200) {
         throw Exception('Erro ao verificar rosto');
       }
@@ -185,13 +125,13 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
+  
   static Future<void> verificarDocumento(int usuarioId) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/auth/verificar-documento/$usuarioId'),
       );
-
+      
       if (response.statusCode != 200) {
         throw Exception('Erro ao verificar documento');
       }
@@ -199,13 +139,15 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
+  
   // ==================== PRODUTOS ====================
-
+  
   static Future<List<Map<String, dynamic>>> listarProdutos() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/produtos'));
-
+      final response = await http.get(
+        Uri.parse('$baseUrl/produtos'),
+      );
+      
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         return data.cast<Map<String, dynamic>>();
@@ -217,8 +159,6 @@ class ApiService {
     }
   }
 
-<<<<<<< HEAD
-=======
   static Future<List<Map<String, dynamic>>> listarCarrinho(int usuarioId) async {
     try {
       final response = await http.get(
@@ -317,9 +257,8 @@ class ApiService {
     }
   }
 
->>>>>>> f3148affb16ba276dddac5db18ef40ba255769ef
   // ==================== TRANSAÇÕES ====================
-
+  
   static Future<Map<String, dynamic>> criarTransacao({
     required int usuarioId,
     required double valor,
@@ -335,7 +274,7 @@ class ApiService {
           'metodo_pagamento': metodoPagamento,
         }),
       );
-
+      
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
@@ -345,15 +284,13 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
-  static Future<Map<String, dynamic>> confirmarTransacao(
-    int transacaoId,
-  ) async {
+  
+  static Future<Map<String, dynamic>> confirmarTransacao(int transacaoId) async {
     try {
       final response = await http.put(
         Uri.parse('$baseUrl/transacoes/$transacaoId/confirmar'),
       );
-
+      
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
@@ -363,15 +300,13 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
-  static Future<List<Map<String, dynamic>>> listarTransacoes(
-    int usuarioId,
-  ) async {
+  
+  static Future<List<Map<String, dynamic>>> listarTransacoes(int usuarioId) async {
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/transacoes/usuario/$usuarioId'),
       );
-
+      
       if (response.statusCode == 200) {
         List<dynamic> data = jsonDecode(response.body);
         return data.cast<Map<String, dynamic>>();
@@ -382,20 +317,18 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
+  
   // ==================== RECONHECIMENTO ====================
-
+  
   static Future<Map<String, dynamic>> processarReconhecimento({
     required int usuarioId,
     required String tipo,
   }) async {
     try {
       final response = await http.post(
-        Uri.parse(
-          '$baseUrl/reconhecimento/processar?usuario_id=$usuarioId&tipo=$tipo',
-        ),
+        Uri.parse('$baseUrl/reconhecimento/processar?usuario_id=$usuarioId&tipo=$tipo'),
       );
-
+      
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       } else {
@@ -405,15 +338,15 @@ class ApiService {
       throw Exception('Erro: $e');
     }
   }
-
+  
   // ==================== HEALTH CHECK ====================
-
+  
   static Future<bool> verificarConexao() async {
     try {
-      final response = await http
-          .get(Uri.parse('$baseUrl/health'))
-          .timeout(const Duration(seconds: 5));
-
+      final response = await http.get(
+        Uri.parse('$baseUrl/health'),
+      ).timeout(const Duration(seconds: 5));
+      
       return response.statusCode == 200;
     } catch (e) {
       return false;
