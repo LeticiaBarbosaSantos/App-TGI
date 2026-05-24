@@ -1,3 +1,4 @@
-0 Prateleira Vazia
-1 Rexona na Prateleira
-2 Mão / ruídos
+0 Vazio
+1 Rexona
+2 Tenys_pe
+3 Ambos
